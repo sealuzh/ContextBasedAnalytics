@@ -1,0 +1,47 @@
+<!doctype html>
+
+<html ng-app="evolutionApp" lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>DevOps Evolution Portal</title>
+  <meta name="description" content="DevOps Evolution">
+
+  {% include "dependencies.html" %}
+
+  <script type="text/javascript" src="/static/js/app/context_graph.js"></script>
+  <script type="text/javascript" src="/static/js/app/renderer.js"></script>
+  <script type="text/javascript" src="/static/js/app/daterange.js"></script>
+
+  <script type="text/javascript" src="/static/js/app/cytoscape/config.js"></script>
+  <script type="text/javascript" src="/static/js/app/cytoscape/initialization.js"></script>
+
+  <style type="text/css">
+    .viewport {
+      stroke: grey;
+      fill: black;
+      fill-opacity: 0.2;
+    }
+
+    .display-none { display: none; }
+
+    body { padding-top: 70px; }
+  </style>
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+		  <a class="navbar-brand" href="#">      <img src="/static/images/uzh_logo.jpg" style="height: 35px; margin-right: 15px; padding-bottom: 5px; float: left;" />
+       <!--<img src="/static/images/ibm_logo.png" style="height: 25px; float: left; margin-right: 15px;" />-->
+        Context-based Analytics</a>
+  </div>
+</nav>
+
+{% block body %}{% endblock %}
+
+
+</body>
+</html>

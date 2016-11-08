@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row">
+	{% for name, url in containers.items() %}
+		<div class="col-xs-3 col-md-3">
+			<div class="thumbnail">
+    		{{ name }} [<a href="javascript: load_{{ name | functionify }}()" onclick="$('#{{ name }}-details').toggle()" data-toggle="tooltip" data-placement="right" title="Repository: {{ url }}">Details</a>]
+			</div>
+		</div>
+  	{% endfor %}
+  </div>
+</div>
+
+{% include "service_details.html" %}
+
+
+{% raw %}
+
+<script id="timeseries_list" type="text/x-handlebars-template">
+    <div>
+        {{#each this}}
+			<div>
+				<a href="javascript: void(0)" onclick="">{{name}}</a>
+				<div id="{{service}}_{{node}}_list_graph_{{number}}" class="display-none-me"></div>
+			</div>
+        {{/each}}
+    </div>
+</script>
+
+
+<script id="code_fragment" type="text/x-handlebars-template">
+    <div>
+			<pre style="width: 550px;"><code class="language-go">{{code}}</code></pre>
+    </div>
+</script>
+
+<script id="keyvalue_list" type="text/x-handlebars-template">
+    <div>
+        {{#each this}}
+			<div>
+				<b>{{key}}</b> ==> {{ value }}
+			</div>
+        {{/each}}
+    </div>
+</script>
+
+<!--<pre style="width: 550px;"><code class="language-python">
+	# Identify database user from QUEUE_USER, then CF_UDPATE_DB_USER
+	if user == None:
+			user = os.environ.get('QUEUE_USER', None)
+			if user == None:
+					user = os.environ.get('CF_UPDATE_DB_USER', None)
+				  # environment variables update-server is using
+</code></pre>-->
+
+
+{% endraw %}
+
+<script type="text/javascript">
+	// all the init is here, but probably should be in their own init.js file
+
+	$(function () {
+
+		//init tooltip
+		$('[data-toggle="tooltip"]').tooltip();
+
+		DateRange.register(ContextGraph.set_date_range);
+		DateRange.init();
+
+	});
+</script>
+  
+{% endblock %}

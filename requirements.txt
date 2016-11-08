@@ -1,0 +1,5 @@
+Flask
+elasticsearch>=1.0.0,<2.0.0
+python-dateutil
+gitpython
+antlr4-python2-runtime

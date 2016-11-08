@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<h2>{{ container_name }}</h2>
+
+
+<div class="row">
+		{% for method  in methods  %}
+		<div class="col-sm-4">
+			<div class="thumbnail">
+    		<a href="/details/{{ container_name }}/method?name={{ method.route }}"><b>{{ method.route }}</b></a>
+				<div style="font-size: 0.8em">
+					Method Name: {{ method.method_definition }}<br/>
+					File: {{ method.file }}
+				</div>
+			</div>
+		</div>
+  	{% endfor %}
+  </div>
+</div>
+  
+{% endblock %}

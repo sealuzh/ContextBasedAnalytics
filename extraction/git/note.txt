@@ -1,0 +1,2 @@
+Removed ANTLR for now because there was no facility to automatically generate the parser.
+Methodslice is a quick workaround that extracts methods (in Python and Go for now) to display as code fragments

@@ -1,0 +1,403 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<h2>{{ container_name }} / {{ method_name_orig }}</h2>
+
+<div id="cy">
+
+</div>
+
+<div id="details">
+
+<div id="overlay">
+    <div style="text-align: right;">
+        <a href="javascript: void(0);" onclick="$('#overlay').hide()">[x] Close</a>
+    </div>
+    <div id="overlay_content">
+
+    </div>
+</div>
+
+<div id="box_rt" class="ts">
+    <h3>Response Time</h3>
+    <div id="box_rt_plot">
+    </div>
+</div>
+
+<div id="box_status" class="ts">
+    <h3>Adaptation Actions</h3>
+    <div id="box_status_plot">
+    </div>
+</div>
+
+
+
+<div class="boxes" id="box_process">
+{% for process in processes %}
+    <div><b>{{ process }}</b> <a href="javascript: void(0)" onclick="$('#process_{{ processes[process]['pid']}}').toggle()">[+]</a>
+        <div id="process_{{ processes[process]['pid'] }}" style="display: none;">
+            {{ processes[process]['openfiles']|length }} open files <a href="javascript: void(0)" onclick="$('#process_files_{{ processes[process]['pid']}}').toggle()">[+]</a>
+<div id="process_files_{{ processes[process]['pid'] }}" style="display: none;">
+    {% for files in processes[process]['openfiles'] %}
+        {{ files }}<br/>
+    {% endfor %}
+</div>
+<br/>
+            <b>Created on:</b> {{ processes[process]['created'] | format_date }}<br/>
+            <b>Command:</b> {{ processes[process]['cmd'] }}
+        </div>
+    </div>
+{% endfor %} 
+</div>
+
+<div class="boxes" id="box_environment">
+<div class="environment_hidden" id="e1">
+   <b>Affected Changes:</b>
+</div>
+{% for variable, value in environment.iteritems() %}
+    <div id="environment_{{ variable }}"><b>{{ variable }}</b>: {{ value }} [<a href="javascript: void(0)" onclick="CodeSearch.search('{{ variable }}')">Code</a>]
+    <div class="code_search" id="code_search_{{ variable  }}"></div>
+</div>
+{% endfor %}
+
+<div class="environment_hidden" id="e2">
+    <img src="/static/images/arrow_up.png" style="margin-left: 18%; height: 20px; display: block;" />
+    <!--<em style="color: red; font-weight: bold;">CF_UPDATE_DB_NAME: </em> jurgen-updates-->
+    <em style="color: red; font-weight: bold;">ES_IP: </em> 192.168.0.2
+</div>
+
+
+
+</div>
+<div class="boxes"  text-align: left;" id="box_version_control_history">
+<!--{{ commits }}-->
+
+{% for commit in commits %}
+    {{ commit.datetime | format_date }}, {{ commit.author }}<br/>
+{% endfor %}
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+<style type="text/css">
+
+.environment_hidden {
+    display: none; 
+}
+
+#overlay {
+    width: 90%;
+    height: 90%;
+    margin: 0 auto;
+    position: absolute;
+    background: white;
+    border: 5px solid #cccccc;
+    border-radius: 10px;
+    display: none;
+    overflow: auto;
+}
+
+#overlay #overlay_content {
+    font-family: courier new;
+    font-size: 11px;
+    text-align: left;
+}
+
+.boxes {
+    border: 1px solid black; 
+    width:60%;
+    margin: 12px;
+    padding: 12px; 
+    text-align: left;
+    display: none;
+}
+
+.ts {
+    height: 240px;
+    width: 400px;
+    z-index: 0;
+    display: none;
+}
+
+#cy {
+  height: 80%;
+  width: 40%;
+  position: absolute;
+  left: 0;
+  top: 20%;
+}
+
+#details {
+    height: 80%;
+    width: 60%;
+    text-align: center;
+    position: absolute;
+    border-left: 1px solid black;
+    left: 40%;
+    top: 20%;
+    overflow: auto;
+}
+
+</style>
+
+
+  <script type="text/javascript">
+  
+    // refactor: `this` didn't work for some reason,
+    // that's why I call it statically
+    var CodeSearch = {
+        //should be defined as a constant in template [TODO]
+        _container_prefix : 'code_search_',
+        _files : null, 
+        _slices : null,
+        _search_term : null,
+
+        //refactor the static use of CodeSearch here,
+        //wanted to use this but didn't work as expected
+        search : function(search_term) {
+            CodeSearch._search_term = search_term;
+            $.getJSON( "/search_repo/" + search_term, function( data ) {
+               CodeSearch._search_term = search_term;
+               CodeSearch._files = data['files'];
+               CodeSearch._slices = data['slices'];
+
+               CodeSearch._renderSlices(search_term, data['slices']);
+            });
+       },
+
+       displayFile : function(file) {
+         var file_contents = Base64.decode(CodeSearch._files[file]);
+         var overlay = document.getElementById('overlay_content');
+         overlay.innerHTML = '<pre><code id="code_search_display" class="python">' + file_contents + '</code></pre>';
+         
+         document.getElementById('overlay').style.display = 'block';
+
+
+         $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+          });
+
+          $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+          });
+
+         var hilitor = new Hilitor('code_search_display');
+         hilitor.apply(CodeSearch._search_term);        
+       },
+
+       _renderSlices : function(search_term, slices) {
+            if(search_term == null) { return; }
+            var container = document.getElementById(CodeSearch._container_prefix + search_term);
+            slices_html = '';
+
+            $('.' + CodeSearch._container_prefix).hide();
+
+            var source   = $("#env_template").html();
+            var template = Handlebars.compile(source);
+
+            slices_html = ''
+            for(var i=0; i < slices.length; i++) {
+                var html    = template(slices[i]);
+                slices_html += html;
+            }
+
+            container.innerHTML = slices_html;
+      }
+  }
+    
+
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        console.log(hljs);
+        hljs.initHighlightingOnLoad();
+
+        
+        //always holds one search instance
+
+               
+      var metricData = ["Performance (ms)"];
+      //var metricDataStatus = ["# Status 500 Error Code"];
+	var metricDataStatus = ["Adaptation Actions"];
+
+
+            var data = {{ metrics }};
+            var status_code_data = [4, 5, 4, 3, 4, 2, 3, 2, 2, 3, 5, 19, 18, 20, 22, 21, 24, 23];
+
+            loadMetricData(data, 'box_rt_plot', metricData);
+            loadMetricData(status_code_data, 'box_status_plot', metricDataStatus);
+            //loadMetricData(data, 'chart2');
+
+      var currentSelection = {};
+      function loadMetricData(data, id, metricData) {
+          metricData.push.apply(metricData, data);  
+          console.log(metricData);
+          var chart = c3.generate({
+            bindto: '#' + id,
+                        size: {
+                    height: '200', width: '400'
+                    },
+            data: {
+              selection: {
+                enabled: true,
+                multiple: true,
+                draggable: true
+              },
+
+              onselected : function(d) { console.log(d); currentSelection[d.index] = d; console.log(currentSelection); window.setTimeout(function() { window.cy.remove('node[weight > 0]'); $('#box_environment div').hide(); $('#environment_ES_IP').show(); document.getElementById('e1').style.display = 'block';  document.getElementById('e2').style.display = 'block'; }, 1500); },
+              onunselected : function(d) { delete currentSelection[d.index]; },
+
+              columns: [
+                metricData
+              ]
+            }, 
+            tooltip: {
+              show: false
+            },
+
+          });
+      }
+
+      function displayPoints(currentSelection) {
+        pointListDom = document.getElementById("pointList");
+        for(var point in currentSelection) {
+          
+        }
+      }
+
+
+      
+$('#cy').cytoscape({
+  style: cytoscape.stylesheet()
+    .selector('node')
+      .css({
+        'content': 'data(name)',
+        'text-valign': 'center',
+        'color': 'white',
+        'text-outline-width': 2,
+        'text-outline-color': '#888'
+      })
+    .selector('edge')
+      .css({
+        'target-arrow-shape': 'triangle'
+      })
+    .selector('.selected')
+      .css({
+        'background-color': 'darkblue'
+        /*'line-color': 'black',
+        #'target-arrow-color': 'black',
+        'source-arrow-color': 'black'*/
+      })
+    .selector('.faded')
+      .css({
+        'opacity': 0.25,
+        'text-opacity': 0
+      }),
+  
+  elements: {
+    nodes: [
+      { data: { id: 'root', name: '{{ container_name }} / {{ method_name_orig }}', weight: 0 } },
+      { data: { id: 'rt', name: 'Response Time', weight: 10 } },
+      { data: { id: 'call_graph', name: 'Call Graph', weight: 10 } },
+      { data: { id: 'version_control_history', name: 'Version Control History', weight: 15 } },
+      { data: { id: 'process', name: 'Processes', weight: 10 } },
+      { data: { id: 'environment', name: 'Environment Variables', weight: 0 } },
+      { data: { id: 'memory', name: 'Memory', weight: 10 } },
+      { data: { id: 'status', name: 'Status Code', weight: 0 } },
+      { data: { id: 'cpu', name: 'CPU', weight: 10 } },
+    ],
+    edges: [
+      { data: { source: 'rt', target: 'call_graph' } },
+      { data: { source: 'root', target: 'rt' } },
+      { data: { source: 'root', target: 'status' } },
+      { data: { source: 'root', target: 'environment' } },
+      { data: { source: 'root', target: 'version_control_history' } },
+      { data: { source: 'root', target: 'process' } },
+      { data: { source: 'root', target: 'memory' } },
+      { data: { source: 'root', target: 'cpu' } },
+      { data: { source: 'process', target: 'memory' } },
+
+    ]
+  },
+  
+  layout: {
+    name: 'circle',
+    padding: 10
+  },
+  
+  // on graph initial layout done (could be async depending on layout...)
+  ready: function(){
+    window.cy = this;
+    
+    // giddy up...
+    
+    cy.elements().unselectify();
+    
+    cy.on('tap', 'node', function(e){
+      var node = e.cyTarget; 
+      //var neighborhood = node.neighborhood().add(node);
+
+            var id = node['_private'].data.id;
+
+            var domId = 'box_' + id;
+            
+            var chart = $("#" + domId);
+            chart.css('display', chart.css('display') == 'block' ? 'none' : 'block');
+            //var offset = 0;
+            //chart.css('top', e.cyPosition.y + offset);
+          //chart.css('left', e.cyPosition.x + offset);
+
+      if(node['_private']['classes']['selected']) {
+        node.removeClass('selected');
+      } else {
+        node.addClass('selected');
+      }
+      //neighborhood.removeClass('faded');
+    });
+    
+    cy.on('tap', function(e){
+      if( e.cyTarget === cy ){
+        cy.elements().removeClass('selected');
+      }
+    });
+  }
+});
+
+
+ 
+      /*var viewport = d3.svg.brush()
+        .on("brush", function () {
+          alert("whaaa");
+        });
+
+      chart.append("g")
+        .attr("class", "viewport")
+        .call(viewport)
+        .selectAll("rect")
+        .attr("height", chart.size.height);
+      */
+     
+
+
+    }); //end DOMContentLoaded callback     
+    
+  </script>
+
+
+
+{% raw %}
+  <script id="env_template" type="text/x-handlebars-template">
+      <div>
+        <span style="font-size:11px"><span style="font-family: courier new;">{{ slice }}</span> (<a href="javascript: void(0);" onclick="CodeSearch.displayFile('{{ file }}');">{{ file }}</a>)</span>
+      </div>
+  </script>
+{% endraw %}
+
+  
+{% endblock %}
