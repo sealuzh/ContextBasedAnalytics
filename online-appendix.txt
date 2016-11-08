@@ -1,0 +1,124 @@
+Step/Trace | Action
+
+T1: How long has the application been down?
+
+Traditional
+S1 | Go to data source http://localhost:8888/kibana/#/dashboard/file/logstash.json
+S2 | Query “health_check”
+S3 | Select “timestamp”, “return_code” as fields
+T1 | Seeing a see of 502 return codes
+S4 | Refining query to see where last 2xx return code happened
+T2 | Scrolling until finding the switch from 502 to 200
+
+CBA
+S1 | Go to CBA dashboard, update-server
+S2 | Click “API Endpoints” > “health_check”
+T1 | Observe “health_check” time series plot, see switch from 502 to 200
+
+Task 2: When did Service 1 communicate to the queue?
+
+Traditional
+S1 | Query for “connectionpool” lib
+T1 | Too many log statements —> log overload
+S2 | Refine query, limit to traces that contain database name
+T2 | Last communication recently, requests to database successful [return_code 200]
+T3 | More communication visible, no interruption of writes detectable
+
+CBA
+S1 | Click “Connections”
+T1 | See time-series of many successful connections [return_code 200]
+T2 | Find time-series with connections to database, all at 200
+
+T3: Is Service 2 alive and send (heartbeat) messages to the database
+
+Traditional
+S1 | Query for “connectionpool” lib and refine to “update-engine” (to see if it is communicating)
+T1 | See recent communication pattern —> alive
+S2 | Refine query to filter only database heartbeat queries
+T2 | See recent heartbeat communication to database
+
+CBA
+S1 | Go to update-engine > “Connections”
+T1 | See recent communication pattern
+T2 | See recent communication to database (heartbeat)
+
+
+T4: Is Service 2 processing tasks from the database?
+
+Traditional
+S1 | Query “connectionpool” and “update-engine”
+T1 | Too many traces
+S2 | Refine to NOT “heartbeat” and last 20 minutes
+T2-T7 | See: Tries to retrieve tasks, but doesn’t write back results (+ hint: weird database name)
+==> traditional wins here because it has more flexibility in its queries
+
+
+CBA
+S1 | Go to “update-engine” - “connections”
+T1-T8 | go through all outgoing connections: Tries to retrieve tasks, but doesn’t write back results (+ hint: weird database name)
+
+T5: How are the environment variables for the database set?
+
+Traditional
+S1 | Go to CloudSight Dashboard
+S2 | Query “docker-inspect” for “update-server”
+T1 | Look at trace for database name
+S3 | Query “docker-inspect” for “update-engine”
+T2 | Look at trace for database name
+S4 | Go to git repo
+S5 | Grep Environment Variable name grep -R "QUEUE_USER” .
+T3-T42 | Inspect code files + bash files
+
+CBA
+S1 | Go to “update-engine” - “Environment”
+T1 | Look at trace for database name
+S2 | Go to “update-server” - “Environment”
+T2 | Look at trace for database name —> different than in “update-engine”
+S3 | Open context nodes
+T3-T18 | Inspect code files + bash file <- it was changed in one of the bash files
+
+
+T6: When did the performance regression start?
+
+Traditional: 
+S1 | Query “werkzeug” and request_time and the same window as in CBA
+S2 | Export data as CSV
+S3 | Open R, plot response times in CSV
+T1 | Inspect plot, can’t see regression
+S4 | Extend window, export CSV again
+S5 | Plot again 
+T2 | See performance regression and time it happened
+
+
+CBA:
+S1 | Go to CBA > “API” Endpoints - see aggregation over all endpoints
+T1 | Inspect time series, see no change from baseline
+S2 | Adjust window w to 1 full day
+T2 | See performance regression and time it happened
+
+T7: What endpoints are affected?
+
+Traditional
+S1 | Group response times by request_uri
+S2 | Plot them in R
+T1-T18 | Inspect all endpoints, see regression only in POST /<version>/<space_id>/update
+
+CBA
+S1 | Open all endpoints
+T1-T18 | Inspect all endpoints, see regression only in POST /<version>/<space_id>/update
+
+T8: What code has been changed on that endpoint?
+
+Traditional
+S1 | Open Terminal at update-engine Folder
+S2 | Grep the endpoint String (suppose we find it the first time around)
+T1 | Determine the file through the grep result
+S3 | Go to folder and analyse git history
+    git log --name-status —oneline (or git log --follow -p rest rest_endpoint_handler.py)
+T2-T17 | Go through the last 16 commits to find change to the method
+
+CBA
+S1 | Expand context on endpoint
+S2 | Adjust time t
+T1-T4 | Adjust time t in binary search fashion to find when change occurred (log_2 (16) = 4)
+T5 | Inspect commit id
