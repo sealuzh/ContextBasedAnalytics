@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="ContextBasedAnalytics : Analytics Framework to model heterogeneous data sources and organize it in a graph structure">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>ContextBasedAnalytics</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/sealuzh/ContextBasedAnalytics">View on GitHub</a>
+
+          <h1 id="project_title">ContextBasedAnalytics</h1>
+          <h2 id="project_tagline">Analytics Framework to model heterogeneous data sources and organize it in a graph structure</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/sealuzh/ContextBasedAnalytics/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/sealuzh/ContextBasedAnalytics/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="context-based-analytics" class="anchor" href="#context-based-analytics" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Context Based Analytics</h1>
+
+<p>Context-Based Analytics (CBA) is a research project between University of Zurich and IBM T.J. Watson Research Center in New York. </p>
+
+<h2>
+<a id="problem" class="anchor" href="#problem" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Problem</h2>
+
+<p>Diagnosing problems in large-scale, distributed applications running in cloud environments requires investigating different sources of information to reason about application state at any given time. Typical sources of information available to de- velopers and operators include log statements and other runtime information collected by monitors such as application and system metrics. Just as importantly, developers rely on information related to changes to the source code and configuration files (program code) when troubleshooting. This information is generally scattered, and it is up to the troubleshooter to inspect multiple implicitly-connected fragments thereof. Currently, different tools need to be used in conjunction, e.g., log aggregation tools, source-code management tools, and runtime-metric dashboards, each requiring different data sources and workflows. Not surprisingly, diagnosing problems is a difficult proposition. </p>
+
+<h2>
+<a id="proposed-approach" class="anchor" href="#proposed-approach" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Proposed Approach</h2>
+
+<p>We propose Context-Based Analytics (CBA), an approach that makes the links between runtime information and program-code fragments explicit by constructing a graph based on an application-context model. Implicit connections between information fragments are explicitly represented as edges in the graph. </p>
+
+<h3>
+<a id="framework" class="anchor" href="#framework" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Framework</h3>
+
+<p>We designed a framework for expressing application-context models and implemented a prototype. 
+To model entities to incorporate in the context graph, you need to provide</p>
+
+<ul>
+<li>Data Extractor: Basically a formal description of the data source (e.g., HTTP API, database connector)</li>
+<li>Model: The unique attributes that make up an entity and how to form it from the data extractor</li>
+<li>Nodes: Definition of how models are represented in the graph and how it can expand</li>
+<li>Visualization: Mapping from Node/Model to a Visualization (Time Series, KeyValue List, Code Fragment are available). There is a possibility to extend visualizations.</li>
+<li>Entry Point: Definition of starting nodes that can be extended upon</li>
+</ul>
+
+<h2>
+<a id="case-study" class="anchor" href="#case-study" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Case Study</h2>
+
+<p>To evaluate the framework, we instantiated an application model for IBM's active-deploy (<a href="https://github.com/IBM-Bluemix/active-deploy">https://github.com/IBM-Bluemix/active-deploy</a>) and performed a case study evaluation. As part of an online appendix, we provide a detailed log of steps taken and traces inspected on a task-level for the baseline (Kibana) and our approach:</p>
+
+<pre><code>- [online-appendix.txt]
+</code></pre>
+
+<h3>
+<a id="disclaimer" class="anchor" href="#disclaimer" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Disclaimer</h3>
+
+<p>Beware that this implementation only serves as a proof-of-concept. You should not use any of this code in production, seriously. For more information on code that sometimes comes out of a research environment, read this: <a href="http://matt.might.net/articles/crapl/">http://matt.might.net/articles/crapl/</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">ContextBasedAnalytics maintained by <a href="https://github.com/sealuzh">sealuzh</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
