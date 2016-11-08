@@ -24,7 +24,7 @@ class CPUNode(Node):
 
       items[cpu.label].append(cpu.__dict__)
 
-    return { 'expand_nodes' : [{"data" : {"id": 'code_fragment:validate', "name": 'func validate() (Go)'}}], 'data' : items }
+    return { 'expand_nodes' : [], 'data' : items }
 
 
   def infer_context(self):
